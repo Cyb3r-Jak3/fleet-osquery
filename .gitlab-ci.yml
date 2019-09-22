@@ -1,0 +1,7 @@
+image: "centos:7"
+
+test_fleet:
+  script:
+    - cd ./fleet/
+    - chmod +x setup.sh
+    - ./setup.sh --default --full
