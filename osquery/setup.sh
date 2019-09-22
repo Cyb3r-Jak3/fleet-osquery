@@ -9,7 +9,7 @@ echo "Installing osquery"
 yum install -y osquery > /dev/null
 
 
-curl https://gitlab.com/jwhite1st/Scripts/raw/master/Linux/osquery/fleetconnect.service -o /etc/systemd/system/fleetconnect.service > /dev/null
+curl https://gitlab.com/jwhite1st/fleet-osquery/raw/master/osquery/fleetconnect.service -o /etc/systemd/system/fleetconnect.service > /dev/null
 
 
 read -p "Please enter the hostname/ip of your fleet server. (Include port): " server 
