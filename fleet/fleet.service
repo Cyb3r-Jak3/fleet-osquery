@@ -1,0 +1,19 @@
+[Unit]
+Description=Kolide Fleet
+After=network.target
+
+[Service]
+LimitNOFILE=8192
+ExecStart=/usr/bin/fleet serve \
+  --mysql_address=127.0.0.1:3306 \
+  --mysql_database=kolide \
+  --mysql_username=root \
+  --mysql_password=DBPASSWORD \ # DBPASSWORD gets replaced with a randomly generated password
+  --redis_address=127.0.0.1:6379 \
+  --server_cert=/tmp/server.cert \
+  --server_key=/tmp/server.key \
+  --auth_jwt_key=BADSTRING \ # BADSTRING gets replaced with a randomly generated string
+  --logging_json
+  
+[Install]
+WantedBy=multi-user.target
