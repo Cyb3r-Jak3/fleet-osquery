@@ -91,7 +91,7 @@ then
 	cp --force fleet.service /etc/systemd/system/fleet.service
 else
 	echo 'Getting prebuilt service file'
-	curl -s https://gitlab.com/jwhite1st/fleet-osquery/raw/master/fleet/fleet.service -o /etc/systemd/system/fleet.service > /dev/null
+	curl -s https://raw.githubusercontent.com/jwhite1st/fleet-osquery/master/fleet/fleet.service -o /etc/systemd/system/fleet.service > /dev/null
 fi
 # Generates random string for auth_jwt_key
 random_string=$(password_gen 20)
