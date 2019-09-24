@@ -6,5 +6,5 @@ before_install:
  - sudo apt-get -y install mdcheckr
 
 script:
-  - find . -name *.sh -exec "shellcheck -s bash -e SC208 {}" \;
+  - find . -name *.sh -exec shellcheck -s bash -e SC208 {} \; -exec echo -e "\e[92m {} passed \e[0m" \;
   - git ls-files | grep '\.md$' | tr '\n' '\0' | xargs -0 mdcheckr
