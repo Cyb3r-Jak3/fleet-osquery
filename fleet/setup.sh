@@ -1,4 +1,5 @@
 #!/bin/bash
+# shellcheck disable=SC2086
 
 # Gets the arguments
 while test $# -gt 0; do
