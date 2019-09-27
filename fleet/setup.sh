@@ -50,7 +50,7 @@ echo "Installing MySQL"
 yum install -y mysql-server &> /dev/null
 echo "Starting and configuring MySQL"
 systemctl start mysqld 
-random_password=$(password_gen 25)
+random_password=$(password_gen 30)
 #Sets up mysql
 function SQLInstall() {
 temp_pass=$(awk '/A temporary password is generated for/ {a=$0} END{ print a }' /var/log/mysqld.log | awk '{print $(NF)}')
