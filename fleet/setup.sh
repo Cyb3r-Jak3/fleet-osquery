@@ -101,8 +101,7 @@ random_string=$(password_gen 20)
 sed -i -e "s/BADSTRING\b/$random_string/g" /etc/systemd/system/fleet.service
 
 #Changes database password
-sed -i -e "s/toor\b/$random_password/g" /etc/systemd/system/fleet.service
-#sed -i -e "s/DBPASSWORD\b/$random_password/g" /etc/systemd/system/fleet.service
+sed -i -e "s/DBPASSWORD\b/$random_password/g" /etc/systemd/system/fleet.service
 
 #Starts and enables fleet
 systemctl daemon-reload
