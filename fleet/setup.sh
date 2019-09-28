@@ -27,7 +27,7 @@ fi
 # A functions to random password
 function password_gen() {
 	local pass
-	pass=$(head /dev/urandom | tr -dc 'A-Za-z0-9!@$%^' | head -c$1)
+	pass=$(head /dev/urandom | tr -dc 'A-Za-z0-9~!@#$%^&*' | head -c$1)
 	echo "$pass"
 }
 # Install packages needed
@@ -140,7 +140,7 @@ echo -e "Your SQL root password is \e[92m$random_password\e[0m"
 
 if [ "$full" = "true" ]
 then
-	echo -e "Your fleet login is https://localhost:8080 email: \e[95m $email [0m password: \e[31m$fleet_password\e[0m"
+	echo -e "Your fleet login is https://localhost:8080 email: \e[95m$email\e[0m password: \e[31m$fleet_password\e[0m"
 	echo -e "Your enroll secret is \e[36m$enroll_secret\e[0m"
 else
 	echo -e "Please login to fleet and set it up. Fleet Location: \e[31mhttps://localhost:8080\e[0m"
