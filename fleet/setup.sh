@@ -16,6 +16,9 @@ while test $# -gt 0; do
 		shift;
 		email="$1";
 		shift;;
+		"--debug")
+		debug="true";
+		shift;;
   esac
 done
 
@@ -123,7 +126,10 @@ then
   	enroll_secret=$(fleetctl get enroll-secret)
 fi
 
+if [[ "$debug" != "true" ]]; then
 clear
+fi
+
 echo -e "
 \e[92m
              _   _     _____                                __  

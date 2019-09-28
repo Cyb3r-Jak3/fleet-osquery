@@ -19,6 +19,8 @@ Theses are the currently supported command line options:
 - ```--email <email>```
   - Allows you to specify the email that will be created as the admin. You do not need to be able to access it i.e. ```admin@localhost.com```.
   - It does need to have a domain.
+- ```--debug```
+  - Shows more information about the scripts progress.
 
 ### Service Customization
 
