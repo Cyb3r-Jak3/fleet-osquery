@@ -8,13 +8,22 @@ while test $# -gt 0; do
 	full="true";
 	shift;;
 	"--server")
+	full="true";
 	shift;
 	server="$1";
 	shift;;
 	"--secret")
+	full="true";
 	shift;
 	secret="$1";
-	;;
+	shift;;
+	"--debug" | "-v")
+	debug="true";
+	shift;;
+	*)
+    echo "Don't know $1";
+    exit 1
+    ;;
   esac
 done
 
@@ -22,9 +31,10 @@ done
 echo "Installing tools needed"
 yum install -y yum-utils > /dev/null
 
-curl -L https://pkg.osquery.io/rpm/GPG -o /etc/pki/rpm-gpg/RPM-GPG-KEY-osquery > /dev/null
+curl -s -L https://pkg.osquery.io/rpm/GPG -o /etc/pki/rpm-gpg/RPM-GPG-KEY-osquery > /dev/null
 yum-config-manager --add-repo https://pkg.osquery.io/rpm/osquery-s3-rpm.repo > /dev/null
 yum-config-manager --enable osquery-s3-rpm > /dev/null
+
 echo "Installing osquery"
 yum install -y osquery > /dev/null
 
@@ -38,11 +48,6 @@ if [[ "$full" = "true" ]]; then
 	read -pr "Please enter the encroll secret from your server:" secret
 	fi
 
-	echo "$secret" > /var/osquery/enroll_secret
-
-	openssl s_client -showcerts -connect $server </dev/null 2>/dev/null|openssl x509 -outform PEM > /var/osquery/server.pem
-	sed -i -e "s/oldip\b/$server/g" /etc/systemd/system/fleetconnect.service
-
 	if [[ -e ./fleetconnect.service ]]; then
 		echo "Using local service file"
 		cp --force fleet.service /etc/systemd/system/fleetconnect.service
@@ -50,6 +55,12 @@ if [[ "$full" = "true" ]]; then
 		echo "Getting preconfigured service file"
 		curl -s https://raw.githubusercontent.com/jwhite1st/fleet-osquery/master/osquery/fleetconnect.service -o /etc/systemd/system/fleetconnect.service > /dev/null
 	fi
+
+	echo "$secret" > /var/osquery/enroll_secret
+	# Gets the certificate and exports it
+	openssl s_client -showcerts -connect $server </dev/null 2>/dev/null|openssl x509 -outform PEM > /var/osquery/server.pem
+	sed -i -e "s/oldip\b/$server/g" /etc/systemd/system/fleetconnect.service
+
 	systemctl daemon-reload
 	systemctl start fleetconnect.service
 	systemctl enable fleetconnect.service
@@ -57,7 +68,10 @@ if [[ "$full" = "true" ]]; then
 fi
 
 
+if [[ "$debug" != "true" ]]; then
 clear
+fi
+
 echo -e "
 \e[92m
              _   _     _____                                __  

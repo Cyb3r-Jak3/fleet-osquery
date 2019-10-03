@@ -16,9 +16,16 @@ while test $# -gt 0; do
 		shift;
 		email="$1";
 		shift;;
-		"--debug")
+		"--debug" | "-v")
 		debug="true";
 		shift;;
+		"--export" | "-e")
+		copy="true";
+		shift;;
+		*)
+    	echo "Don't know $1";
+    	exit 1
+    	;;
   esac
 done
 
@@ -27,10 +34,11 @@ if [[ -z $email ]]
 then
 	email="fleet@localhost.com"
 fi
+
 # A functions to random password
 function password_gen() {
 	local pass
-	pass=$(head /dev/urandom | tr -dc 'A-Za-z0-9~!@#$%^&*' | head -c$1)
+	pass=$(head /dev/urandom | tr -dc 'A-Za-z0-9~!@#$^*' | head -c$1)
 	echo "$pass"
 }
 # Install packages needed
@@ -39,7 +47,7 @@ yum install -y wget unzip > /dev/null
 #Gets and copies the fleet binary
 echo "Getting fleet binaries"
 wget -q https://github.com/kolide/fleet/releases/latest/download/fleet.zip 
-unzip fleet.zip 'linux/*' -d fleet > /dev/null
+unzip -o fleet.zip 'linux/*' -d fleet > /dev/null
 cp fleet/linux/fleet* /usr/bin/ > /dev/null
 
 # Gets an installs MySQL
@@ -54,25 +62,29 @@ yum install -y mysql-server &> /dev/null
 echo "Starting and configuring MySQL"
 systemctl start mysqld 
 random_password=$(password_gen 30)
+
 #Sets up mysql
 function SQLInstall() {
+random_password=$(password_gen 30)
 temp_pass=$(awk '/A temporary password is generated for/ {a=$0} END{ print a }' /var/log/mysqld.log | awk '{print $(NF)}')
-if ! mysqladmin -u root --password=${temp_pass} password $random_password
+if ! mysqladmin -u root --password=${temp_pass} password $random_password &> /dev/null
 then
 	echo "Failed to create mysql with password: $random_password"
-	exit
+	#exit
+	SQLInstall
 fi
-echo "CREATE DATABASE kolide;" | mysql -u root -p$random_password
-systemctl enable mysqld
+echo "CREATE DATABASE kolide;" | mysql -u root -p$random_password &> /dev/null
+systemctl enable mysqld &> /dev/null
 }
 SQLInstall
+
 #Installs redis
 echo "Getting redis"
 rpm -Uvh http://dl.fedoraproject.org/pub/epel/6/i386/epel-release-6-8.noarch.rpm &> /dev/null
 echo "Installing redis"
 yum install -y redis &> /dev/null
 systemctl enable redis &> /dev/null
-systemctl start redis
+systemctl start redis &> /dev/null
 
 #Prepares the database
 /usr/bin/fleet prepare db --mysql_address=127.0.0.1:3306 --mysql_database=kolide --mysql_username=root --mysql_password=$random_password
@@ -120,15 +132,35 @@ then
 	echo "Setting up Fleet"
 	fleet_password=$(password_gen 15)
 	fleetctl config set --address https://localhost:8080 --tls-skip-verify
-	echo "fleetctl setup --email $email --password $fleet_password"
   	fleetctl setup --email $email --password $fleet_password
 	fleetctl login --email $email --password $fleet_password
   	enroll_secret=$(fleetctl get enroll-secret)
 fi
 
+ip=$(ip route get 1.1.1.1 | awk -F"src " 'NR==1{split($2,a," ");print a[1]}')
+
+# Exports credentails generated
+if [[ "$copy" = "true" ]]
+then
+	cat > credentials.txt << EOF
+	SQL root password: $random_password
+EOF
+	if [[ "$full" = "true" ]]
+	then
+	cat >> credentials.txt << EOF
+	fleet email: $email
+	fleet password: $fleet_password
+	encroll secret: $enroll_secret
+EOF
+	fi
+fi
+
 if [[ "$debug" != "true" ]]; then
 clear
 fi
+
+# Cleans up
+rm -rf fleet fleet.zip mysql57-community-release-el7.rpm 
 
 echo -e "
 \e[92m
@@ -144,9 +176,9 @@ Created by \e[96mJacob White \e[0m
 "
 echo -e "Your SQL root password is \e[92m$random_password\e[0m"
 
-if [ "$full" = "true" ]
+if [[ "$full" = "true" ]]
 then
-	echo -e "Your fleet login is https://localhost:8080 email: \e[95m$email\e[0m password: \e[31m$fleet_password\e[0m"
+	echo -e "Your fleet login is https://$ip:8080 email: \e[95m$email\e[0m password: \e[31m$fleet_password\e[0m"
 	echo -e "Your enroll secret is \e[36m$enroll_secret\e[0m"
 else
 	echo -e "Please login to fleet and set it up. Fleet Location: \e[31mhttps://localhost:8080\e[0m"

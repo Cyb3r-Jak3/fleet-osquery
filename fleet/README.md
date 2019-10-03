@@ -12,15 +12,17 @@ chmod +x setup.sh
 
 Theses are the currently supported command line options:
 
-- ```--full```
+- ```--full``` or ```-f```
   - Setups fleet with an email and random password.
-- ```--default```
+- ```--default``` or ```-d```
   - Generates an ssl key and cert for fleet.local
 - ```--email <email>```
   - Allows you to specify the email that will be created as the admin. You do not need to be able to access it i.e. ```admin@localhost.com```.
   - It does need to have a domain.
-- ```--debug```
+- ```--debug``` or ```-v```
   - Shows more information about the scripts progress.
+- ```--export``` or ```-e```
+  - Exported all credentials to a credentials.txt
 
 ### Service Customization
 
